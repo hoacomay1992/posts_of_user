@@ -20,4 +20,8 @@ abstract class ApiService {
 
   @POST("Posts")
   Future<PostsModel> insertPosts(@Body() PostsModel postsModel);
+  @PUT("Posts/{id}")
+  Future<PostsModel> updatePosts(@Path() String id, @Body() PostsModel postsModel);
+  @DELETE("Posts/{id}")
+  Future<void> deletePosts(@Path("id") String id);
 }

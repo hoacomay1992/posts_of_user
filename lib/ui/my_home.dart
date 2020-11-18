@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:posts_of_user/network/api_service.dart';
 import 'package:posts_of_user/network/model/posts_model.dart';
+import 'package:posts_of_user/ui/detail_posts.dart';
 import 'package:provider/provider.dart';
 
 class MyHome extends StatefulWidget {
@@ -65,7 +67,7 @@ class _MyHomeState extends State<MyHome> {
                 decoration: InputDecoration(labelText: 'User name'),
                 controller: _userNameControler,
                 onChanged: (text) {
-                    _postsModel.userName = text.toString();
+                  _postsModel.userName = text.toString();
                 },
               ),
             ),
@@ -75,7 +77,7 @@ class _MyHomeState extends State<MyHome> {
                 decoration: InputDecoration(labelText: 'Post title'),
                 controller: _titleControler,
                 onChanged: (text) {
-                    _postsModel.title = text.toString();
+                  _postsModel.title = text.toString();
                 },
               ),
             ),
@@ -85,7 +87,7 @@ class _MyHomeState extends State<MyHome> {
                 decoration: InputDecoration(labelText: 'Content post'),
                 controller: _bodyControler,
                 onChanged: (text) {
-                    _postsModel.body = text.toString();
+                  _postsModel.body = text.toString();
                 },
               ),
             ),
@@ -95,7 +97,7 @@ class _MyHomeState extends State<MyHome> {
                 decoration: InputDecoration(labelText: 'comment'),
                 controller: _commentControler,
                 onChanged: (text) {
-                    _postsModel.comment = text.toString();
+                  _postsModel.comment = text.toString();
                 },
               ),
             ),
@@ -227,77 +229,122 @@ class _MyHomeState extends State<MyHome> {
 
   ListView _listNewPosts({BuildContext context, List<PostsModel> posts}) {
     return ListView.builder(
+      primary: false,
+      shrinkWrap: true,
       itemCount: posts.length,
       itemBuilder: (BuildContext context, int index) {
-        return Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            color: (index - 1) % 2 == 0 ? Colors.lightGreen : Colors.pinkAccent,
-            elevation: 10,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(10),
-                ),
-                Column(
+        return Dismissible(
+          key: Key(posts[index].toString()),
+          background: Container(
+            color: Colors.red,
+            alignment: AlignmentDirectional.centerEnd,
+            child: Icon(
+              Icons.delete,
+              color: Colors.white,
+            ),
+          ),
+          onDismissed: (direction) {
+            setState(() {
+              final api = Provider.of<ApiService>(context, listen: false);
+              api.deletePosts(posts[index].id).whenComplete(() {
+                print('delete success');
+              }).catchError((onError) {
+                print(onError.toString);
+              });
+              posts.removeAt(index);
+            });
+          },
+          direction: DismissDirection.endToStart,
+          child: GestureDetector(
+            child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                color: (index - 1) % 2 == 0
+                    ? Colors.lightGreen
+                    : Colors.pinkAccent,
+                elevation: 10,
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  //trục chính Column luôn trên xuống(dọc) ngược lại Row
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  //trục ngang
-                  children: [
+                  //crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
                     Padding(
-                      padding: EdgeInsets.only(top: 10),
+                      padding: EdgeInsets.all(10),
                     ),
-                    Text(
-                      '${posts[index].title}',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                    Text(
-                      'User: ${posts[index].userName}',
-                      style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                          fontStyle: FontStyle.italic),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 10),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(top: 10),
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Icon(
+                              Icons.account_balance,
+                              color: Colors.white,
+                            ),
+                            Text(
+                              ' ${posts[index].title}',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Icon(
+                              Icons.account_box_rounded,
+                              color: Colors.white,
+                            ),
+                            Text(
+                              ' ${posts[index].userName}',
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic),
+                            )
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Container(
+                              child: Text(
+                                'Show detail',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 10),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-                //chiếm hết toàn bộ không gian còn lại trong Row
-                // Expanded(
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.end,
-                //     children: <Widget>[
-                //       Container(
-                //         padding: const EdgeInsets.all(5.0),
-                //         child: Text(
-                //           '${transactions[index].amount}\$',
-                //           style: TextStyle(fontSize: 15, color: Colors.white),
-                //         ),
-                //         //thuộc tính boder
-                //         decoration: BoxDecoration(
-                //             border: Border.all(
-                //                 color: Colors.white,
-                //                 width: 2,
-                //                 style: BorderStyle.solid),
-                //             borderRadius:
-                //                 BorderRadius.all(Radius.circular(10))),
-                //       ),
-                //       Padding(
-                //         padding: EdgeInsets.only(right: 10),
-                //       )
-                //     ],
-                //   ),
-                // )
-              ],
-            ));
+                )),
+            onTap: () {
+              _postsModel = posts[index];
+              _onTapped(_postsModel);
+            },
+          ),
+        );
       },
     );
+  }
+
+  void _onTapped(PostsModel postsModel) {
+    print('click');
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => DetailPost(
+                  title: 'list comment of post',
+                  postsModel: _postsModel,
+                )));
   }
 }
