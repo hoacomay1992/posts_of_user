@@ -54,4 +54,42 @@ class _ApiService implements ApiService {
     final value = PostsModel.fromJson(_result.data);
     return value;
   }
+
+  @override
+  Future<PostsModel> updatePosts(id, postsModel) async {
+    ArgumentError.checkNotNull(id, 'id');
+    ArgumentError.checkNotNull(postsModel, 'postsModel');
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(postsModel?.toJson() ?? <String, dynamic>{});
+    _data.removeWhere((k, v) => v == null);
+    final _result = await _dio.request<Map<String, dynamic>>('Posts/$id',
+        queryParameters: queryParameters,
+        options: RequestOptions(
+            method: 'PUT',
+            headers: <String, dynamic>{},
+            extra: _extra,
+            baseUrl: baseUrl),
+        data: _data);
+    final value = PostsModel.fromJson(_result.data);
+    return value;
+  }
+
+  @override
+  Future<void> deletePosts(id) async {
+    ArgumentError.checkNotNull(id, 'id');
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    await _dio.request<void>('Posts/$id',
+        queryParameters: queryParameters,
+        options: RequestOptions(
+            method: 'DELETE',
+            headers: <String, dynamic>{},
+            extra: _extra,
+            baseUrl: baseUrl),
+        data: _data);
+    return null;
+  }
 }
